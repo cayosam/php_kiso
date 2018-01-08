@@ -1,0 +1,189 @@
+データベースの操作用SQL(CRUD)
+
+■Create(データ作成)
+
+`　→　アクサングラーブ。テーブル名やカラム名を囲むときに使用
+バッククォーテーションとも呼ぶ
+
+
+INSERT INTO `survey` (`nickname`,`email`,`content`)VALUES("のび太","nobita@gmail.com","ぼくのび太です。");
+
+INSET INTO `データを作りたいテーブル名`(`カラム名１`,`カラム名２`,...)
+VALUES("カラム名１にセットしたい値","カラム名２にセットしたい値",...);
+
+
+■Read(データの読み出し)(取得)
+■SELECT文
+
+SELECT * FROM `survey`;
+
+SELECT `取得したいカラム名１`,`取得したいカラム名２`,..
+FROM `データを取得したいテーブル名`
+WHERE 絞り込み条件;
+
+SELECT と FROMの間には取得したいカラム名をカンマ区切りで書きます。
+*(アスタリスク) はカラム全部という意味。
+WHERE は取得したいデータの条件を指定できる。省略も可能。省略したときは、全データ取得する。
+
+
+SELECT * FROM `survey`
+WHERE `nickname` = "山田";
+上のような検索方法を完全一致検索と呼びます。
+
+
+SELECT * FROM `survey`
+WHERE `email` LIKE "%n%";
+上のような検索方法をあいまい検索(部分一致 or 中間一致検索)と呼びます。
+
+前方一致検索（頭がnから始まる）
+SELECT * FROM `survey`
+WHERE `email` LIKE "n%";
+
+後方一致検索(語尾が 「です。」で終わる)
+SELECT * FROM `survey` 
+WHERE `content` LIKE "%です。";
+
+数値に対する絞り込み検索
+SELECT * FROM `survey`
+WHERE `code` > 5
+
+
+複数条件での絞り込み
+SELECT * FROM `survey`
+WHERE `email` LIKE "%n%"
+AND `email` LIKE "%b%";
+
+SELECT * FROM `survey`
+WHERE `email` LIKE "%n%"
+OR `email` LIKE "%s%";
+
+SELECT * FROM `survey`
+WHERE `code` IN(1,3,5);
+
+
+並べ替え
+SELECT * FROM `survey`
+ORDER BY `code` ASC;
+
+codeの数字が小さい順に並ぶ
+ASC 昇順(ASCは省略可能)
+
+SELECT * FROM `survey`
+ORDER BY `code` DESC;
+
+codeの数字が大きい順に並ぶ
+DESC 降順(DESCは省略できない)
+
+
+
+■UPDATE文
+UPDATE `survey`
+SET`nickname` = "スネ夫"
+WHERE `code` = 8;
+
+UPDATE `survey`
+SET `content` = "セブ最高たぜ"
+WHERE `content` LIKE "%です。";
+
+UPDATE `更新したいデータがあるテーブル名`
+SET `更新したいカラム名` = "更新したいデータ",...
+WHERE = 更新したいデータを取得する条件;
+
+注意！WHERE句が指定されていないと、同じデータが実行されてしまう。
+
+■DELETE文
+DELETE FROM `survey`
+WHERE `code` = 9;
+
+DELETE FROM `survey`
+WHERE `content` = "セブ最高たぜ";
+
+DELETE FROM `削除したいデータがあるテーブル名`
+WHERE 削除したいデータを取得する条件;
+
+注意！WHERE句が指定されていないと、すべてのデータが削除されてしまう。
+
+
+
+宿題
+
+CRUDの例文 
+
+INSERT文 
+クラスメイトのニックネームで一人ひとつぶやきのデータが作成できるようなINSERT文を作りましょう
+
+SERECT文
+語尾に「です」とついているコメントを書いているデータを検索できるSERECT文を作りましょう
+
+UPDATE文
+語尾に「です」とついているコメントを書いているデータを「セブ最高たぜ」に変更するUPDATE文にを作りましょう
+
+DELETE文
+コメントが「セブ最高たぜ」に変えられてしまったデータをすべて削除するDELETE文を作りましょう
+
+crud.sqlファイルを作成し、上のsql文すべて記述して提出してください。
+提出フォルダ->自分の名前フォルダの直下においてください。
+
+
+
+
+
+PHPからデータベースを操作する
+PHPからデータベースを扱う場合のルールとして、必ず次の3ステップを踏みます。
+
+▼ ステップ１：データベースに接続する
+
+まずはじめに、使用したいデータベースに接続します。
+データベース接続プログラムは次のように記述します。
+
+<?php
+  $dsn = 'mysql:dbname=データベース名;host=localhost';
+  $user = 'ユーザー名';
+  $password='パスワード';
+  $dbh = new PDO($dsn, $user, $password);
+  $dbh->query('SET NAMES utf8');
+?>
+上記5行のプログラムはPHPからデータベースに接続する際のテンプレート的なもので、どんなシステムを作成する場合もこちらを使って接続できます。
+いつでもコピペできる状態にしておき、必要に応じて使いまわすと効率的な開発が可能です。（暗記の必要はありません）
+
+編集が必要な箇所は下記。
+
+使用したいデータベース名を記述
+データベース接続ユーザー名を記述
+データベース接続パスワードを記述
+各環境によって内容は変わりますが、XAMPP環境をお使いの場合、ユーザー名は「root」、パスワードは空（何も入力しない）になります。
+
+
+▼ ステップ２：SQL文を実行する
+
+データベースに接続できたら、SQL文を記述・実行します。
+
+<?php
+  $sql = 'INSERT文やSELECT文等、必要なSQL文を記述';
+  $stmt = $dbh->prepare($sql);
+  $stmt->execute();
+?>
+PHPでSQL文を扱う際の仕組みは下記のようになります。
+
+SQL文を文字列（シングルクォートで囲うデータ型）で用意し、変数にしておく。
+PDOからできた$dbh変数のprepareにsql文が入った変数をセットします。（SQL実行前の準備）
+上記セットしたSQL文をexecuteを使って実行します。
+
+こちらもPDOを使ったSQL文実行プロセスのテンプレートプログラムなので、「SQL文を実行する = この3行」と覚えてしまうと楽です。
+
+
+▼ ステップ３：データベースとの接続を切断する
+
+データベースの処理が終了したら、データベースとの接続を切断します。
+
+<?php
+  $dbh = null;
+?>
+プログラムのパフォーマンスの観点からも、データベースは接続したら必ず切断
+
+
+
+
+
+
+
