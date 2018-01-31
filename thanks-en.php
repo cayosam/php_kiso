@@ -1,5 +1,6 @@
 <?php
 //扱いやすいように変数に代入
+
 $nickname = htmlspecialchars($_POST["nickname"]);
 $email = htmlspecialchars($_POST["email"]); 
 $content = htmlspecialchars($_POST["content"]);
